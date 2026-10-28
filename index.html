@@ -1,1 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Minimalist</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #ffffff; color: #111111; max-width: 800px; margin: 0 auto; padding: 2rem 1rem; line-height: 1.6; }
+        h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem; border-bottom: 1px solid #eaeaea; padding-bottom: 1rem; }
+        .item { display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid #f5f5f5; }
+        .score { font-weight: 700; color: #666666; min-width: 2.5rem; font-variant-numeric: tabular-nums; }
+        .score.high { color: #000000; }
+        .title { font-size: 1rem; font-weight: 500; flex-grow: 1; margin: 0; }
+        .title a { color: #111111; text-decoration: none; }
+        .title a:hover { color: #0000ee; text-decoration: underline; }
+        .meta { font-size: 0.8rem; color: #888888; white-space: nowrap; }
+        .loading { color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>News Minimalist</h1>
+    <div id="news-container">
+        <p class="loading">Carregando notícias...</p>
+    </div>
 
+    <script>
+        // SUBSTITUA EXATAMENTE AQUI PELOS SEUS DADOS DO BLOCO DE NOTAS
+        const SUPABASE_URL = 'https://jqgvuherkhlbcdsoukfh.supabase.co/rest/v1/';
+        const SUPABASE_KEY = 'sb_publishable_uwBI8rKj-pg01bJ8vEwY7g_gIdoxWMe';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function carregarNoticias() {
+            const { data, error } = await supabase
+                .from('noticias')
+                .select('*')
+                .order('score', { ascending: false })
+                .limit(50);
+
+            const container = document.getElementById('news-container');
+            
+            if (error) {
+                container.innerHTML = '<p>Erro ao carregar. Verifique se colou as chaves do Supabase corretamente no código.</p>';
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p>Nenhuma notícia encontrada. O robô ainda não rodou ou não achou notícias relevantes hoje.</p>';
+                return;
+            }
+
+            container.innerHTML = ''; 
+
+            data.forEach(n => {
+                const scoreClass = n.score >= 5.5 ? 'high' : '';
+                const dataPub = new Date(n.publicado_em);
+                const diffHoras = Math.floor((Date.now() - dataPub.getTime()) / (1000 * 60 * 60));
+                const tempo = diffHoras < 24 ? `${diffHoras}h` : `${Math.floor(diffHoras / 24)}d`;
+
+                const html = `
+                    <div class="item">
+                        <span class="score ${scoreClass}">[${n.score.toFixed(1)}]</span>
+                        <h2 class="title"><a href="${n.url}" target="_blank" rel="noopener">${n.titulo}</a></h2>
+                        <span class="meta">(${n.fonte}) ${tempo}</span>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        carregarNoticias();
+    </script>
+</body>
+</html>

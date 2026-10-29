@@ -29,11 +29,11 @@
         const SUPABASE_URL = 'https://jggvuherkhlbcdsoukfh.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_uwBI8rKj-pg01bJ8vEwY7g_gIdoxWMe';
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        cconst supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function carregarNoticias() {
-            const { data, error } = await supabase
-                .from('noticias')
+async function carregarNoticias() {
+    const { data, error } = await supabaseClient
+        .from('noticias')
                 .select('*')
                 .order('score', { ascending: false })
                 .limit(50);

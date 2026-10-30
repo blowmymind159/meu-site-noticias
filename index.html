@@ -6,69 +6,263 @@
     <title>News Minimalist</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #ffffff; color: #111111; max-width: 800px; margin: 0 auto; padding: 2rem 1rem; line-height: 1.6; }
-        h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem; border-bottom: 1px solid #eaeaea; padding-bottom: 1rem; }
-        .item { display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid #f5f5f5; }
-        .score { font-weight: 700; color: #666666; min-width: 2.5rem; font-variant-numeric: tabular-nums; }
-        .score.high { color: #000000; }
-        .title { font-size: 1rem; font-weight: 500; flex-grow: 1; margin: 0; }
-        .title a { color: #111111; text-decoration: none; }
-        .title a:hover { color: #0000ee; text-decoration: underline; }
-        .meta { font-size: 0.8rem; color: #888888; white-space: nowrap; }
-        .loading { color: #666; font-style: italic; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+        }
+
+        .news-item {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .news-item:hover {
+            transform: translateY(-2px);
+            border-color: rgba(96, 165, 250, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .score {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #60a5fa;
+            min-width: 3.5rem;
+            flex-shrink: 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .score.high {
+            color: #a78bfa;
+        }
+
+        .score.very-high {
+            color: #f472b6;
+        }
+
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .title a {
+            color: #f1f5f9;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .title a:hover {
+            color: #60a5fa;
+        }
+
+        .meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+            color: #64748b;
+            flex-wrap: wrap;
+        }
+
+        .source {
+            background: rgba(148, 163, 184, 0.1);
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .time {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 1.5rem;
+            border-radius: 12px;
+            color: #f87171;
+            text-align: center;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+            background: rgba(30, 41, 59, 0.4);
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .news-item {
+                padding: 1.25rem;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .score {
+                min-width: auto;
+                align-self: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>News Minimalist</h1>
-    <div id="news-container">
-        <p class="loading">Carregando notícias...</p>
+    <div class="container">
+        <header>
+            <h1>News Minimalist</h1>
+            <p class="subtitle">Notícias curadas por inteligência artificial</p>
+        </header>
+
+        <div id="news-container">
+            <p class="loading">A carregar notícias...</p>
+        </div>
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://jqgvuherkhlbcdsoukfh.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxZ3Z1aGVya2hsYmNkc291a2ZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyMDA0MjMsImV4cCI6MjEwODc3NjQyM30.yd7njb80EawHJj8uRGF7KqKbvXshyYOseyxpNdW3hXE';
+        const SUPABASE_URL = 'https://jggvuherkhlbcdsoukfh.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZ3Z1aGVya2hsYmNkc291a2ZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA2NzQ0NjgsImV4cCI6MjA0NjI1MDQ2OH0.xxxxxxxxxxxxxxxxxxxxx';
 
-        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function getScoreClass(score) {
+            if (score >= 7.0) return 'very-high';
+            if (score >= 5.5) return 'high';
+            return '';
+        }
+
+        function formatTime(publishedAt) {
+            if (!publishedAt) return 'recente';
+            
+            const date = new Date(publishedAt);
+            if (isNaN(date.getTime())) return 'recente';
+            
+            const diffHours = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60));
+            
+            if (diffHours < 1) return 'agora';
+            if (diffHours < 24) return `${diffHours}h`;
+            
+            const diffDays = Math.floor(diffHours / 24);
+            if (diffDays < 7) return `${diffDays}d`;
+            
+            return date.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' });
+        }
 
         async function carregarNoticias() {
-            const { data, error } = await client
-                .from('noticias')
-                .select('*')
-                .order('score', { ascending: false })
-                .limit(50);
-
             const container = document.getElementById('news-container');
 
-            if (error) {
-                container.innerHTML = '<p>Erro ao carregar: ' + error.message + '</p>';
-                return;
+            try {
+                const { data, error } = await supabase
+                    .from('noticias')
+                    .select('*')
+                    .order('score', { ascending: false })
+                    .limit(50);
+
+                if (error) {
+                    container.innerHTML = `<div class="error">Erro ao carregar: ${error.message}</div>`;
+                    return;
+                }
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<div class="empty">Nenhuma notícia encontrada. O robô ainda não rodou ou não achou notícias relevantes.</div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+
+                data.forEach(n => {
+                    const scoreClass = getScoreClass(n.score);
+                    const time = formatTime(n.publicado_em || n.created_at);
+                    const source = n.fonte || 'Unknown';
+
+                    const html = `
+                        <div class="news-item">
+                            <div class="score ${scoreClass}">[${n.score.toFixed(1)}]</div>
+                            <div class="content">
+                                <h2 class="title">
+                                    <a href="${n.url}" target="_blank" rel="noopener noreferrer">
+                                        ${n.titulo}
+                                    </a>
+                                </h2>
+                                <div class="meta">
+                                    <span class="source">${source}</span>
+                                    <span class="time">${time}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+
+            } catch (err) {
+                container.innerHTML = `<div class="error">Erro ao carregar: ${err.message}</div>`;
             }
-
-            if (!data || data.length === 0) {
-                container.innerHTML = '<p>Nenhuma notícia encontrada. O robô ainda não rodou ou não achou notícias relevantes.</p>';
-                return;
-            }
-
-            container.innerHTML = '';
-
-            data.forEach(n => {
-                const scoreClass = n.score >= 5.5 ? 'high' : '';
-                let tempo = 'recente';
-if (n.publicado_em) {
-    const dataPub = new Date(n.publicado_em);
-    if (!isNaN(dataPub.getTime())) {
-        const diffHoras = Math.floor((Date.now() - dataPub.getTime()) / (1000 * 60 * 60));
-        tempo = diffHoras < 24 ? diffHoras + 'h' : Math.floor(diffHoras / 24) + 'd';
-    }
-}
-
-                const html = '<div class="item">' +
-                    '<span class="score ' + scoreClass + '">[' + n.score.toFixed(1) + ']</span>' +
-                    '<h2 class="title"><a href="' + n.url + '" target="_blank" rel="noopener">' + n.titulo + '</a></h2>' +
-                    '<span class="meta">(' + n.fonte + ') ' + tempo + '</span>' +
-                    '</div>';
-                container.innerHTML += html;
-            });
         }
 
         carregarNoticias();

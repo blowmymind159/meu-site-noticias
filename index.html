@@ -6,11 +6,7 @@
     <title>News Minimalist</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -27,9 +23,9 @@
         }
 
         header {
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
             padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.15);
         }
 
         h1 {
@@ -76,18 +72,10 @@
             font-variant-numeric: tabular-nums;
         }
 
-        .score.high {
-            color: #a78bfa;
-        }
+        .score.high { color: #a78bfa; }
+        .score.very-high { color: #f472b6; }
 
-        .score.very-high {
-            color: #f472b6;
-        }
-
-        .content {
-            flex: 1;
-            min-width: 0;
-        }
+        .content { flex: 1; min-width: 0; }
 
         .title {
             font-size: 1.05rem;
@@ -102,9 +90,7 @@
             transition: color 0.2s ease;
         }
 
-        .title a:hover {
-            color: #60a5fa;
-        }
+        .title a:hover { color: #60a5fa; }
 
         .meta {
             display: flex;
@@ -122,150 +108,29 @@
             font-weight: 500;
         }
 
-        .time {
-            font-variant-numeric: tabular-nums;
-        }
-
-        .loading {
+        .loading, .error, .empty {
             text-align: center;
             padding: 3rem;
             color: #64748b;
             font-style: italic;
-        }
-
-        .error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            padding: 1.5rem;
-            border-radius: 12px;
-            color: #f87171;
-            text-align: center;
-        }
-
-        .empty {
-            text-align: center;
-            padding: 3rem;
-            color: #64748b;
             background: rgba(30, 41, 59, 0.4);
             border-radius: 12px;
             border: 1px solid rgba(148, 163, 184, 0.1);
         }
 
+        .error { color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
+
         @media (max-width: 640px) {
-            body {
-                padding: 1rem;
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
-
+            body { padding: 1rem; }
+            h1 { font-size: 1.5rem; }
             .news-item {
                 padding: 1.25rem;
                 flex-direction: column;
                 gap: 0.75rem;
             }
-
-            .score {
-                min-width: auto;
-                align-self: flex-start;
-            }
+            .score { min-width: auto; align-self: flex-start; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>News Minimalist</h1>
-            <p class="subtitle">Notícias curadas por inteligência artificial</p>
-        </header>
-
-        <div id="news-container">
-            <p class="loading">A carregar notícias...</p>
-        </div>
-    </div>
-
-    <script>
-        const SUPABASE_URL = 'https://jggvuherkhlbcdsoukfh.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZ3Z1aGVya2hsYmNkc291a2ZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA2NzQ0NjgsImV4cCI6MjA0NjI1MDQ2OH0.xxxxxxxxxxxxxxxxxxxxx';
-
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        function getScoreClass(score) {
-            if (score >= 7.0) return 'very-high';
-            if (score >= 5.5) return 'high';
-            return '';
-        }
-
-        function formatTime(publishedAt) {
-            if (!publishedAt) return 'recente';
-            
-            const date = new Date(publishedAt);
-            if (isNaN(date.getTime())) return 'recente';
-            
-            const diffHours = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60));
-            
-            if (diffHours < 1) return 'agora';
-            if (diffHours < 24) return `${diffHours}h`;
-            
-            const diffDays = Math.floor(diffHours / 24);
-            if (diffDays < 7) return `${diffDays}d`;
-            
-            return date.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' });
-        }
-
-        async function carregarNoticias() {
-            const container = document.getElementById('news-container');
-
-            try {
-                const { data, error } = await supabase
-                    .from('noticias')
-                    .select('*')
-                    .order('score', { ascending: false })
-                    .limit(50);
-
-                if (error) {
-                    container.innerHTML = `<div class="error">Erro ao carregar: ${error.message}</div>`;
-                    return;
-                }
-
-                if (!data || data.length === 0) {
-                    container.innerHTML = '<div class="empty">Nenhuma notícia encontrada. O robô ainda não rodou ou não achou notícias relevantes.</div>';
-                    return;
-                }
-
-                container.innerHTML = '';
-
-                data.forEach(n => {
-                    const scoreClass = getScoreClass(n.score);
-                    const time = formatTime(n.publicado_em || n.created_at);
-                    const source = n.fonte || 'Unknown';
-
-                    const html = `
-                        <div class="news-item">
-                            <div class="score ${scoreClass}">[${n.score.toFixed(1)}]</div>
-                            <div class="content">
-                                <h2 class="title">
-                                    <a href="${n.url}" target="_blank" rel="noopener noreferrer">
-                                        ${n.titulo}
-                                    </a>
-                                </h2>
-                                <div class="meta">
-                                    <span class="source">${source}</span>
-                                    <span class="time">${time}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    container.innerHTML += html;
-                });
-
-            } catch (err) {
-                container.innerHTML = `<div class="error">Erro ao carregar: ${err.message}</div>`;
-            }
-        }
-
-        carregarNoticias();
-    </script>
-</body>
-</html>
+    <div class="

@@ -53,9 +53,14 @@
 
             data.forEach(n => {
                 const scoreClass = n.score >= 5.5 ? 'high' : '';
-                const dataPub = new Date(n.publicado_em);
-                const diffHoras = Math.floor((Date.now() - dataPub.getTime()) / (1000 * 60 * 60));
-                const tempo = diffHoras < 24 ? diffHoras + 'h' : Math.floor(diffHoras / 24) + 'd';
+                let tempo = 'recente';
+if (n.publicado_em) {
+    const dataPub = new Date(n.publicado_em);
+    if (!isNaN(dataPub.getTime())) {
+        const diffHoras = Math.floor((Date.now() - dataPub.getTime()) / (1000 * 60 * 60));
+        tempo = diffHoras < 24 ? diffHoras + 'h' : Math.floor(diffHoras / 24) + 'd';
+    }
+}
 
                 const html = '<div class="item">' +
                     '<span class="score ' + scoreClass + '">[' + n.score.toFixed(1) + ']</span>' +

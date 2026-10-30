@@ -211,22 +211,19 @@
             event.target.classList.add('active');
 
             let source = n.fonte || 'Unknown';
-// Limpar nomes longos de fontes
-if (source.includes('–')) {
+       // Limpar nomes longos de fontes
+            if (source.includes('–')) {
     source = source.split('–')[0].trim();
 }
 if (source.includes('|')) {
     source = source.split('|')[0].trim();
 }
-// Remover texto repetido
 if (source.toLowerCase().includes('breaking news')) {
     source = source.replace(/breaking news,?/i, '').trim();
 }
 if (source.toLowerCase().includes('world news and video from')) {
     source = source.replace(/world news and video from/i, '').trim();
 }
-            renderNews(filtered);
-        }
 
         async function carregarNoticias() {
             const container = document.getElementById('news-container');

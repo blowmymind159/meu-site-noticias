@@ -210,12 +210,21 @@
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
 
-            let filtered = allNews;
-            if (type === 'significant') {
-                filtered = allNews.filter(n => n.score >= 5.5);
-            } else if (type === 'latest') {
-                filtered = [...allNews].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            }
+            let source = n.fonte || 'Unknown';
+// Limpar nomes longos de fontes
+if (source.includes('–')) {
+    source = source.split('–')[0].trim();
+}
+if (source.includes('|')) {
+    source = source.split('|')[0].trim();
+}
+// Remover texto repetido
+if (source.toLowerCase().includes('breaking news')) {
+    source = source.replace(/breaking news,?/i, '').trim();
+}
+if (source.toLowerCase().includes('world news and video from')) {
+    source = source.replace(/world news and video from/i, '').trim();
+}
             renderNews(filtered);
         }
 
